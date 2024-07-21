@@ -1,42 +1,36 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const cors = require('cors');
-const { Pool } = require('pg');
-
+const { Client } = require('pg');
 const app = express();
 const port = 3000;
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
+app.use(cors()); // Enable CORS
+app.use(express.json());
 
-// Database configuration
-const pool = new Pool({
-  user: 'yourusername',
+const client = new Client({
   host: 'database',
-  database: 'yourdatabase',
+  user: 'yourusername',
   password: 'yourpassword',
-  port: 5432,
+  database: 'yourdatabase',
 });
+client.connect();
 
-// API endpoint
 app.post('/submit-details', async (req, res) => {
   const { name, favoriteNumber, alternativeName } = req.body;
-  
+
   try {
-    const result = await pool.query(
-      'INSERT INTO details (name, favorite_number, alternative_name) VALUES ($1, $2, $3) RETURNING *',
+    await client.query(
+      'INSERT INTO user_details (name, favorite_number, alternative_name) VALUES ($1, $2, $3)',
       [name, favoriteNumber, alternativeName]
     );
-    res.status(200).json(result.rows[0]);
-  } catch (error) {
-    console.error('Error inserting details:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(200).send('Details received');
+  } catch (err) {
+    console.error('Database error:', err);
+    res.status(500).send('Error saving details');
   }
 });
 
-// Start server
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Server running on http://localhost:${port}`);
 });
 
