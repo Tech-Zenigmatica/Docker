@@ -1,0 +1,31 @@
+#You have 3 directories. Blue, purple and Nginx. 
+#SO, to understand the requirement of Nginx. First lets start the 3 containers.
+
+# This Command is for creating a image For Blue Background
+docker build -f ./blue/Dockerfile -t httpd-blue ./blue
+
+# This Command is for creating a image For Purple Background
+docker build -f ./purple/Dockerfile -t httpd-purple ./purple
+
+# Once Images are created Run the Docker run Command with the Images created
+# Blue
+docker run -d --name httpd-blue -p 8081:80 httpd-blue
+
+# Purple
+docker run -d --name httpd-purple -p 8082:80 httpd-purple
+
+
+# For accessing Dark Blue we need to Type http://<ipAddress>:8082 and http://<ipAddress>:8081 for the other Color
+# But, instead we want /blue to go Blue container and /purple to go to httpd file containing purple container
+# For that we can make use of the Nginx which stands inbetween the containers and lets us pass the request to the respected containers when configured correctly. To configure it follow Below Steps.
+
+# We need to make a Few Changes. Type 'docker network ls'. You will get a list and under that you will have a bridge network
+# Select its Hash and paste is after 'docker network inspect <hash>
+# Write down the IPV4 of Blue and Purple and paste it in the nginx/nginx.conf to its appropriate upstream as I have give you. IT SHOULD NOT CONTAIN 'http://'. Just paste the IPV4 and Run Below Commands
+# Lets build Image for Nginx and run it and lets see.
+docker build -f ./nginx/Dockerfile -t nginx-blue_purple ./nginx
+
+docker run -d --name nginx-blue_purple -p 80:80 nginx-blue_purple
+
+# As you can see your if done in Windows its localhost but if done in online Servers like AWS or Google cloud, type the type and /blue or /purple. You will find the output. 
+# But this is not a good way of doing it. This is just for understanding. We need to do it in dockerCompose. 
